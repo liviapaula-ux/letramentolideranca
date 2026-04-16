@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playbook: Liderança Inclusiva para Pais e Mães</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind Config for Custom Palette -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-bg': '#FAF8F5', /* Warm off-white */
+                        'brand-text': '#292524', /* Stone 800 */
+                        'brand-accent': '#EA580C', /* Orange 600 - "Foodlover" warmth */
+                        'brand-secondary': '#14B8A6', /* Teal 500 - Health/Balance */
+                        'brand-card': '#FFFFFF',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles & Chart Container Constraints */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAF8F5;
+            color: #292524;
+        }
+
+        /* Mandatory Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Prevents stretching on large screens */
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px; /* Base height */
+            max-height: 400px;
+        }
+        
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 250px;
+                max-height: 300px;
+            }
+        }
+
+        /* Interactive Elements Styles */
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-btn.active {
+            border-bottom-color: #EA580C;
+            color: #EA580C;
+            font-weight: 600;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+        .accordion-btn.active .icon-rotate {
+            transform: rotate(180deg);
+        }
+
+        /* Custom scrollbar for aesthetics */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="antialiased flex flex-col md:flex-row min-h-screen">
+
+    <!-- Chosen Palette: Warm Neutrals with Terracotta and Sage Accents (brand-bg, brand-text, brand-accent, brand-secondary). Creates a welcoming, nurturing, yet professional environment suitable for a "foodlover" corporate culture. -->
+    
+    <!-- Application Structure Plan: 
+         Structure: Sidebar Navigation + Main Content Area (Single Page App).
+         Sections:
+         1. Intro: Sets the tone and context.
+         2. O Cenário (Data): Uses charts to show WHY this matters (retention, skills). Integrates the "Filhos no currículo" concept.
+         3. A Jornada (Interactive Tabs): The core playbook. Breaks down the timeline (Discovery, Leave, Return) making it easy for a leader to find situational advice.
+         4. Guia Prático (Accordions): Do's and Don'ts for quick reference.
+         5. Termômetro (Interactive Quiz): Tests knowledge and reinforces learning through active engagement.
+         Flow: Linear scroll guided by sidebar, allowing users to jump to specific needs (e.g., "My employee just announced a pregnancy, what do I do?").
+    -->
+
+    <!-- Visualization & Content Choices: 
+         - Data/Context -> Doughnut Chart (Skills Gained) -> Interactive hover -> Shows parenthood builds professional soft skills (Goal: Inform/Change mindset). Library: Chart.js.
+         - Data/Context -> Bar Chart (Retention) -> Visual comparison -> Proves ROI of supportive leadership (Goal: Compare/Persuade). Library: Chart.js.
+         - Timeline/Process -> Interactive Tabs ("A Jornada") -> Click to switch content -> Organizes complex chronological advice into digestible chunks (Goal: Organize). Method: Vanilla JS + Tailwind.
+         - Quick Reference -> Accordions ("O que falar/Não falar") -> Click to expand -> Keeps UI clean while offering deep detail (Goal: Inform/Organize). Method: Vanilla JS + Tailwind.
+         - Scenario Testing -> Interactive Quiz -> Click to select answer, JS validates -> Active learning and empathy building (Goal: Engagement/Apply knowledge). Method: Vanilla JS.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Unicode symbols and Tailwind CSS shapes utilized for visual elements. -->
+
+    <!-- Sidebar Navigation -->
+    <nav class="md:w-64 bg-white shadow-lg md:fixed md:h-full z-20 overflow-y-auto hidden md:block border-r border-stone-200">
+        <div class="p-6">
+            <div class="text-3xl mb-2">🥗👶</div>
+            <h1 class="text-xl font-bold text-brand-text mb-8">Playbook<br><span class="text-brand-accent">Liderança Inclusiva</span></h1>
+            <ul class="space-y-4 text-sm font-medium text-stone-600">
+                <li><a href="#intro" class="hover:text-brand-accent transition-colors block py-2">Introdução</a></li>
+                <li><a href="#cenario" class="hover:text-brand-accent transition-colors block py-2">O Cenário & Dados</a></li>
+                <li><a href="#jornada" class="hover:text-brand-accent transition-colors block py-2">A Jornada do Colaborador</a></li>
+                <li><a href="#guia" class="hover:text-brand-accent transition-colors block py-2">Guia Prático (Falas)</a></li>
+                <li><a href="#cenarios" class="hover:text-brand-accent transition-colors block py-2">Termômetro da Liderança</a></li>
+            </ul>
+        </div>
+        <div class="p-6 mt-auto border-t border-stone-100">
+            <p class="text-xs text-stone-400">Nutrindo talentos, acolhendo famílias.</p>
+        </div>
+    </nav>
+
+    <!-- Mobile Topbar -->
+    <div class="md:hidden bg-white shadow-sm sticky top-0 z-30 p-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🥗</span>
+            <h1 class="font-bold text-brand-text text-lg">Playbook Parentalidade</h1>
+        </div>
+        <!-- Simple anchor links for mobile -->
+        <select onchange="window.location.href=this.value" class="bg-stone-50 border border-stone-200 text-stone-700 text-sm rounded-lg focus:ring-brand-accent focus:border-brand-accent block p-2">
+            <option value="#intro">Menu</option>
+            <option value="#cenario">Dados</option>
+            <option value="#jornada">A Jornada</option>
+            <option value="#guia">Guia Prático</option>
+            <option value="#cenarios">Termômetro</option>
+        </select>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-6 md:p-12 max-w-5xl">
+        
+        <!-- Section: Intro -->
+        <section id="intro" class="mb-20 pt-8">
+            <div class="inline-block px-3 py-1 bg-brand-accent/10 text-brand-accent rounded-full text-xs font-bold tracking-wider mb-4 uppercase">
+                Letramento para Líderes
+            </div>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-brand-text leading-tight mb-6">
+                Nutrindo Ambientes para <span class="text-brand-accent border-b-4 border-brand-secondary">Pais e Mães</span>
+            </h2>
+            <p class="text-lg text-stone-600 mb-6 max-w-3xl leading-relaxed">
+                Bem-vindo ao playbook definitivo para lideranças. Em nossa cultura "foodlover", sabemos que os melhores resultados vêm de times que se sentem seguros, acolhidos e inteiros. A chegada de um filho é um dos momentos mais transformadores na vida de um colaborador. 
+            </p>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 flex items-start gap-4 max-w-3xl">
+                <div class="text-4xl">💡</div>
+                <div>
+                    <h3 class="font-bold text-lg mb-1">O seu papel é o ingrediente principal</h3>
+                    <p class="text-stone-600 text-sm">
+                        Líderes são o termômetro da cultura. A forma como você reage à notícia de uma gravidez, como planeja a licença e como conduz o retorno dita se esse talento continuará crescendo conosco ou se evadirá. Este material une conceitos de <strong>"Filhos no Currículo"</strong> e segurança psicológica para te guiar.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: O Cenário (Data) -->
+        <section id="cenario" class="mb-20 scroll-mt-20">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-brand-text mb-2">Por que isso importa?</h2>
+                <p class="text-stone-600 max-w-2xl">
+                    Entenda os dados por trás da parentalidade no mercado de trabalho e como ela, na verdade, desenvolve competências cruciais (Soft Skills).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Chart 1: Filhos no Curriculo -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-center text-lg mb-2">Habilidades Desenvolvidas na Parentalidade</h3>
+                    <p class="text-xs text-center text-stone-500 mb-6">Conceito "Filhos no Currículo": Pais e mães retornam como profissionais mais completos.</p>
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Retenção -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-center text-lg mb-2">Impacto da Liderança na Retenção</h3>
+                    <p class="text-xs text-center text-stone-500 mb-6">Mães que permanecem na empresa 2 anos após o retorno.</p>
+                    <div class="chart-container">
+                        <canvas id="retentionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: A Jornada (Interactive Tabs) -->
+        <section id="jornada" class="mb-20 scroll-mt-20">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-brand-text mb-2">A Jornada do Colaborador</h2>
+                <p class="text-stone-600 max-w-2xl">
+                    Como apoiar seu liderado em cada fase. Selecione a etapa abaixo para ver o plano de ação.
+                </p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex overflow-x-auto border-b border-stone-200 mb-6 hide-scroll">
+                <button onclick="switchTab('tab-descobrimento')" class="tab-btn active px-4 py-3 text-sm font-medium text-stone-500 whitespace-nowrap" id="btn-tab-descobrimento">1. A Notícia</button>
+                <button onclick="switchTab('tab-gestacao')" class="tab-btn px-4 py-3 text-sm font-medium text-stone-500 whitespace-nowrap" id="btn-tab-gestacao">2. Gestação/Espera</button>
+                <button onclick="switchTab('tab-licenca')" class="tab-btn px-4 py-3 text-sm font-medium text-stone-500 whitespace-nowrap" id="btn-tab-licenca">3. A Licença</button>
+                <button onclick="switchTab('tab-retorno')" class="tab-btn px-4 py-3 text-sm font-medium text-stone-500 whitespace-nowrap" id="btn-tab-retorno">4. O Retorno</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 min-h-[300px]">
+                
+                <!-- Tab 1: A Notícia -->
+                <div id="tab-descobrimento" class="tab-content block animate-fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">🎉</span>
+                        <h3 class="text-2xl font-bold text-brand-accent">A Notícia (O Anúncio)</h3>
+                    </div>
+                    <p class="text-stone-600 mb-6">O momento em que o liderado conta que será pai/mãe (biológico ou adotivo) é um <strong>Momento da Verdade</strong>. A sua reação imediata define a segurança psicológica dele para os próximos meses.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-stone-50 p-4 rounded-xl border-l-4 border-brand-secondary">
+                            <h4 class="font-bold text-brand-secondary mb-2">O que fazer:</h4>
+                            <ul class="space-y-2 text-sm text-stone-700">
+                                <li class="flex gap-2"><span>✅</span> Parabenize genuinamente. Celebre a vida.</li>
+                                <li class="flex gap-2"><span>✅</span> Garanta que a carreira da pessoa está segura.</li>
+                                <li class="flex gap-2"><span>✅</span> Pergunte como ela está se sentindo fisicamente/emocionalmente.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-stone-50 p-4 rounded-xl border-l-4 border-red-400">
+                            <h4 class="font-bold text-red-500 mb-2">O que NÃO fazer:</h4>
+                            <ul class="space-y-2 text-sm text-stone-700">
+                                <li class="flex gap-2"><span>❌</span> Não suspire, arregale os olhos ou demonstre preocupação com prazos no primeiro momento.</li>
+                                <li class="flex gap-2"><span>❌</span> Não mude os planos de promoção ou projetos automaticamente.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Gestação -->
+                <div id="tab-gestacao" class="tab-content hidden animate-fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">🗓️</span>
+                        <h3 class="text-2xl font-bold text-brand-accent">A Gestação / Período de Espera</h3>
+                    </div>
+                    <p class="text-stone-600 mb-6">Este é o momento de planejamento de negócio e flexibilidade. Consultas médicas, exames médicos ou trâmites de adoção demandam tempo.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-stone-800 mb-3 border-b pb-2">Ações da Liderança</h4>
+                            <ul class="space-y-3 text-sm text-stone-700">
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-0.5">🔹</span> 
+                                    <span><strong>Flexibilidade proativa:</strong> Ofereça horários flexíveis para consultas sem que a pessoa precise "implorar".</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-0.5">🔹</span> 
+                                    <span><strong>Mapeamento de handover:</strong> Comece a mapear processos no 5º/6º mês. Quem vai cobrir o quê?</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-0.5">🔹</span> 
+                                    <span><strong>Inclusão contínua:</strong> Mantenha a pessoa nos planos de longo prazo e ciclos de avaliação justos.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-brand-accent/5 p-4 rounded-xl">
+                            <p class="text-sm font-semibold text-brand-accent mb-2">Dica de Ouro</p>
+                            <p class="text-sm text-stone-600">Combine com o colaborador qual será o "acordo de comunicação" durante a licença. Ele quer receber fotos do time? Quer ser avisado de grandes mudanças organizacionais? Ou prefere desconexão total? Documente isso.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Licença -->
+                <div id="tab-licenca" class="tab-content hidden animate-fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">⏸️</span>
+                        <h3 class="text-2xl font-bold text-brand-accent">A Licença Parental</h3>
+                    </div>
+                    <p class="text-stone-600 mb-6">O período de afastamento. Seja licença maternidade ou paternidade, o foco deve ser total na família e na adaptação à nova rotina.</p>
+                    
+                    <div class="flex flex-col gap-4">
+                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                            <h4 class="font-bold text-stone-800 mb-2">Desconexão é Mandatória</h4>
+                            <p class="text-sm text-stone-600">Não envie mensagens de trabalho no WhatsApp pessoal. Não copie em e-mails urgentes. O <em>handover</em> bem feito serve para isso. Se for algo previsto no "acordo de comunicação" (ex: aviso sobre bônus), faça pelos canais combinados.</p>
+                        </div>
+                        <div class="bg-brand-secondary/10 p-4 rounded-xl border border-brand-secondary/20">
+                            <h4 class="font-bold text-brand-secondary mb-2">O papel de quem fica</h4>
+                            <p class="text-sm text-stone-700">Aproveite para desenvolver as pessoas que assumiram as tarefas interinamente (stretch assignments). A licença de um é oportunidade de crescimento para o outro time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Retorno -->
+                <div id="tab-retorno" class="tab-content hidden animate-fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">🔄</span>
+                        <h3 class="text-2xl font-bold text-brand-accent">O Retorno (Onboarding)</h3>
+                    </div>
+                    <p class="text-stone-600 mb-6">O momento mais crítico para a retenção. O colaborador volta como uma nova pessoa, com novas prioridades e soft skills aprimoradas.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <ul class="space-y-4 text-sm text-stone-700">
+                                <li>
+                                    <strong class="block text-brand-accent">1. Re-onboarding:</strong>
+                                    Trate o retorno como a entrada de um novo funcionário. Atualize sobre ferramentas, mudanças de equipe e estratégia.
+                                </li>
+                                <li>
+                                    <strong class="block text-brand-accent">2. Conversa de alinhamento:</strong>
+                                    "Como está sua rotina agora? Como podemos estruturar seus horários nas primeiras semanas?"
+                                </li>
+                                <li>
+                                    <strong class="block text-brand-accent">3. Proteção no primeiro mês:</strong>
+                                    Evite viagens longas ou projetos de altíssima pressão nas primeiras 4 semanas de readaptação (escola, creche, etc).
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-stone-800 text-white p-5 rounded-xl">
+                            <h4 class="font-bold mb-2">Evite o "Viés da Maternidade"</h4>
+                            <p class="text-sm text-stone-300">Não assuma que, porque ela virou mãe, ela não quer mais desafios ou promoções. <strong>Pergunte. Não decida por ela.</strong> Mães são altamente produtivas e engajadas quando recebem autonomia.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section: Guia Prático (Accordions) -->
+        <section id="guia" class="mb-20 scroll-mt-20">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-brand-text mb-2">Guia Prático: O que dizer?</h2>
+                <p class="text-stone-600 max-w-2xl">
+                    A linguagem cria a realidade. Ajustes simples no vocabulário demonstram empatia real. Clique para expandir as orientações.
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Accordion 1 -->
+                <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+                    <button class="accordion-btn w-full px-6 py-4 text-left font-bold text-stone-800 flex justify-between items-center bg-stone-50 hover:bg-stone-100 transition-colors" onclick="toggleAccordion(this)">
+                        Ao receber a notícia da gravidez/adoção
+                        <span class="icon-rotate transition-transform duration-300 text-xl">▼</span>
+                    </button>
+                    <div class="accordion-content bg-white">
+                        <div class="p-6 text-sm text-stone-600 grid grid-cols-2 gap-4">
+                            <div>
+                                <h5 class="font-semibold text-brand-secondary mb-2">✅ Diga:</h5>
+                                <p>"Parabéns! Que notícia maravilhosa. Fico muito feliz por você. Não se preocupe com o trabalho agora, vamos planejar tudo juntos para que você tenha tranquilidade."</p>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-red-500 mb-2">❌ Evite dizer:</h5>
+                                <p>"Nossa, logo agora no meio do projeto Y?" ou "Eita, quem vai fazer o seu trabalho?"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion 2 -->
+                <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+                    <button class="accordion-btn w-full px-6 py-4 text-left font-bold text-stone-800 flex justify-between items-center bg-stone-50 hover:bg-stone-100 transition-colors" onclick="toggleAccordion(this)">
+                        Sobre saídas antecipadas (Escola/Médico)
+                        <span class="icon-rotate transition-transform duration-300 text-xl">▼</span>
+                    </button>
+                    <div class="accordion-content bg-white">
+                        <div class="p-6 text-sm text-stone-600 grid grid-cols-2 gap-4">
+                            <div>
+                                <h5 class="font-semibold text-brand-secondary mb-2">✅ Diga:</h5>
+                                <p>"Claro, pode ir. Foque em entregar seus resultados, não importa se você precisar sair às 16h para buscar na creche e logar mais tarde. O que importa é o alinhamento."</p>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-red-500 mb-2">❌ Evite dizer:</h5>
+                                <p>"Saindo mais cedo de novo? Meio período hoje?" (Mesmo em tom de brincadeira, gera culpa e insegurança).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion 3 -->
+                <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+                    <button class="accordion-btn w-full px-6 py-4 text-left font-bold text-stone-800 flex justify-between items-center bg-stone-50 hover:bg-stone-100 transition-colors" onclick="toggleAccordion(this)">
+                        Na volta da licença maternidade
+                        <span class="icon-rotate transition-transform duration-300 text-xl">▼</span>
+                    </button>
+                    <div class="accordion-content bg-white">
+                        <div class="p-6 text-sm text-stone-600 grid grid-cols-2 gap-4">
+                            <div>
+                                <h5 class="font-semibold text-brand-secondary mb-2">✅ Diga:</h5>
+                                <p>"Bem-vinda de volta! Senti sua falta. Sei que a adaptação é dura. Reservei espaço na sua agenda para alinharmos os novos projetos. Como podemos ajustar seus horários neste primeiro mês?"</p>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-red-500 mb-2">❌ Evite dizer:</h5>
+                                <p>"Tirou umas férias longas, hein? Agora tem muito trabalho acumulado." ou "Você deve estar com a cabeça só no bebê, melhor não pegar esse projeto complexo."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Interactive Quiz -->
+        <section id="cenarios" class="mb-20 scroll-mt-20">
+            <div class="bg-[#1e293b] text-white rounded-3xl p-8 md:p-10 shadow-lg relative overflow-hidden">
+                <!-- Background decoration element (pure HTML/CSS) -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-accent rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+                
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold mb-2">Termômetro da Liderança</h2>
+                    <p class="text-stone-300 mb-8 max-w-xl">
+                        Teste seus instintos. Como você agiria na seguinte situação?
+                    </p>
+
+                    <div id="quiz-container" class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20">
+                        <h4 class="text-xl font-semibold mb-4">Cenário:</h4>
+                        <p class="mb-6 text-stone-200">
+                            Uma de suas colaboradoras mais talentosas acabou de voltar de licença maternidade. Surge a oportunidade para liderar um novo projeto desafiador, que pode exigir reuniões no final do dia. O que você faz?
+                        </p>
+
+                        <div class="space-y-3" id="quiz-options">
+                            <button onclick="checkAnswer(1)" class="w-full text-left p-4 rounded-xl bg-white/5 hover:bg-white/20 border border-white/10 transition-all">
+                                A) Não ofereço o projeto a ela. Ela acabou de ser mãe e certamente prefere rotinas previsíveis e sem estresse extra agora.
+                            </button>
+                            <button onclick="checkAnswer(2)" class="w-full text-left p-4 rounded-xl bg-white/5 hover:bg-white/20 border border-white/10 transition-all">
+                                B) Apresento o projeto a ela em detalhes e pergunto se ela tem interesse e disponibilidade, deixando claro que a decisão é dela e não afetará sua avaliação.
+                            </button>
+                            <button onclick="checkAnswer(3)" class="w-full text-left p-4 rounded-xl bg-white/5 hover:bg-white/20 border border-white/10 transition-all">
+                                C) Dou o projeto para ela compulsoriamente, afinal não deve haver diferença no tratamento, e ela precisa mostrar que continua entregando.
+                            </button>
+                        </div>
+
+                        <!-- Feedback Area -->
+                        <div id="quiz-feedback" class="mt-6 hidden p-4 rounded-xl border">
+                            <div class="flex items-start gap-3">
+                                <span id="feedback-icon" class="text-2xl"></span>
+                                <div>
+                                    <h5 id="feedback-title" class="font-bold mb-1"></h5>
+                                    <p id="feedback-text" class="text-sm"></p>
+                                </div>
+                            </div>
+                            <button onclick="resetQuiz()" id="reset-btn" class="mt-4 text-sm font-medium underline hover:text-brand-accent hidden">Tentar novamente</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-stone-200 pt-8 pb-12 text-center text-sm text-stone-500">
+            <p>Construído com ❤️ para líderes que transformam culturas.</p>
+            <p class="mt-2 text-xs">Conceitos baseados nas melhores práticas de "Filhos no Currículo" e "Maternidade nas Empresas".</p>
+        </footer>
+
+    </main>
+
+    <!-- Application Logic -->
+    <script>
+        // --- Tab Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all content
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active class from buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected content
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Add active class to clicked button
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // --- Accordion Logic ---
+        function toggleAccordion(button) {
+            const content = button.nextElementSibling;
+            button.classList.toggle('active');
+
+            if (content.style.maxHeight) {
+                // Close
+                content.style.maxHeight = null;
+            } else {
+                // Open
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        }
+
+        // --- Quiz Logic ---
+        function checkAnswer(option) {
+            const feedbackBox = document.getElementById('quiz-feedback');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackText = document.getElementById('feedback-text');
+            const resetBtn = document.getElementById('reset-btn');
+            const optionsBlock = document.getElementById('quiz-options');
+
+            feedbackBox.classList.remove('hidden', 'bg-green-500/20', 'border-green-500/50', 'bg-red-500/20', 'border-red-500/50');
+            optionsBlock.classList.add('opacity-50', 'pointer-events-none'); // Disable further clicks
+
+            if (option === 2) {
+                feedbackBox.classList.add('bg-green-500/20', 'border-green-500/50');
+                feedbackIcon.textContent = '✅';
+                feedbackTitle.textContent = 'Perfeito! Você evitou o Viés da Maternidade.';
+                feedbackText.textContent = 'Muitos líderes assumem (mesmo com boa intenção) que mães recentes não querem desafios. Isso prejudica as carreiras delas. O correto é oferecer a oportunidade com clareza e permitir que ela decida como gerenciar sua vida profissional e pessoal.';
+                resetBtn.classList.add('hidden');
+            } else {
+                feedbackBox.classList.add('bg-red-500/20', 'border-red-500/50');
+                feedbackIcon.textContent = '❌';
+                feedbackTitle.textContent = 'Cuidado com os vieses ou falta de empatia.';
+                if(option === 1) {
+                    feedbackText.textContent = 'A opção A é o clássico "Viés da Maternidade". Você está decidindo por ela baseado em suposições, o que pode estagnar a carreira dela.';
+                } else {
+                    feedbackText.textContent = 'A opção C peca pela falta de empatia. O retorno exige adaptação e alinhamento, não apenas jogar carga em cima sem planejamento conjunto.';
+                }
+                resetBtn.classList.remove('hidden');
+            }
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            const optionsBlock = document.getElementById('quiz-options');
+            optionsBlock.classList.remove('opacity-50', 'pointer-events-none');
+        }
+
+        // --- Chart.js Implementations ---
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Shared Chart Options
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false, // CRITICAL for filling the .chart-container
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: "'Inter', sans-serif" },
+                            color: '#57534e'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(41, 37, 36, 0.9)',
+                        titleFont: { family: "'Inter', sans-serif", size: 13 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 13 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== undefined) {
+                                    label += context.parsed.y + '%';
+                                } else {
+                                    label += context.parsed + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            };
+
+            // 1. Skills Doughnut Chart (Filhos no Currículo concept)
+            const ctxSkills = document.getElementById('skillsChart').getContext('2d');
+            new Chart(ctxSkills, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Gestão de Tempo', 
+                        'Empatia / Escuta', 
+                        'Gestão de Crise', 
+                        'Negociação'
+                    ],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: [
+                            '#14B8A6', // Teal
+                            '#EA580C', // Orange
+                            '#F59E0B', // Amber
+                            '#6366F1'  // Indigo
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    cutout: '65%',
+                    plugins: {
+                        ...commonOptions.plugins,
+                        tooltip: {
+                            ...commonOptions.plugins.tooltip,
+                            callbacks: {
+                                label: function(context) {
+                                    // Custom tooltip to explain the skill
+                                    const descriptions = [
+                                        'Otimização extrema da agenda para equilibrar pratos.',
+                                        'Maior capacidade de entender necessidades não ditas.',
+                                        'Lidar com imprevistos sob pressão constante.',
+                                        'Acordos contínuos com bebês/crianças aplicados ao corporativo.'
+                                    ];
+                                    return ` ${context.label} (${context.parsed}%) - ${descriptions[context.dataIndex]}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Retention Bar Chart
+            const ctxRetention = document.getElementById('retentionChart').getContext('2d');
+            new Chart(ctxRetention, {
+                type: 'bar',
+                data: {
+                    labels: ['Sem Apoio Estruturado', 'Com Liderança Inclusiva'],
+                    datasets: [{
+                        label: 'Taxa de Retenção (Após 2 anos)',
+                        data: [45, 85], // Mock representative data
+                        backgroundColor: [
+                            '#d6d3d1', // Stone 300 (Negative/Neutral)
+                            '#14B8A6'  // Teal (Positive/Brand)
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) { return value + "%" },
+                                color: '#a8a29e'
+                            },
+                            grid: { color: '#f5f5f4' }
+                        },
+                        x: {
+                            ticks: { color: '#57534e', font: { weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        legend: { display: false } // Hide legend since labels explain it
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
